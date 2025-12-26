@@ -1,7 +1,6 @@
-const axios = require('axios');
-
 /**
  * 调用 HuggingFace Inference API
+ * 使用 OpenAI 兼容格式的端点
  */
 async function callHuggingFace(prompt) {
     const apiKey = process.env.HUGGINGFACE_API_KEY;
@@ -11,64 +10,100 @@ async function callHuggingFace(prompt) {
         throw new Error('HuggingFace API key 未配置');
     }
 
-    try {
-        const response = await axios.post(
-            `https://api-inference.huggingface.co/models/${model}`,
-            {
-                inputs: prompt,
-                parameters: {
-                    max_new_tokens: 1500,
-                    temperature: 0.7,
-                    top_p: 0.9,
-                    do_sample: true,
-                    return_full_text: false
-                }
-            },
-            {
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
-                timeout: 60000 // 60秒超时
-            }
-        );
+    // 动态导入 node-fetch
+    const fetch = (await import('node-fetch')).default;
 
-        // HuggingFace API 响应格式处理
-        let text = '';
-        if (Array.isArray(response.data) && response.data.length > 0) {
-            text = response.data[0].generated_text || response.data[0].text || '';
-        } else if (response.data.generated_text) {
-            text = response.data.generated_text;
-        } else if (typeof response.data === 'string') {
-            text = response.data;
+    // 设置超时控制
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+        controller.abort();
+    }, 120000); // 120秒超时
+
+    try {
+        const apiUrl = `https://api-inference.huggingface.co/models/${model}/v1/chat/completions`;
+
+        const headers = {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        };
+
+        const requestBody = {
+            model: model,
+            messages: [
+                {
+                    role: 'user',
+                    content: prompt
+                }
+            ],
+            max_tokens: 2000,
+            temperature: 0.7,
+            top_p: 0.9,
+            stream: false
+        };
+
+        console.log(`🤖 调用 HuggingFace API: ${model}`);
+        const startTime = Date.now();
+
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(requestBody),
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+        const duration = Date.now() - startTime;
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`❌ HuggingFace API 错误: ${response.status} ${response.statusText}`);
+            console.error('   错误详情:', errorText);
+
+            // 处理特定错误状态
+            if (response.status === 503) {
+                throw new Error('HuggingFace 模型正在加载中，请稍后重试');
+            } else if (response.status === 401) {
+                throw new Error('HuggingFace API key 无效');
+            } else if (response.status === 429) {
+                throw new Error('HuggingFace API 请求频率超限');
+            } else {
+                throw new Error(`HuggingFace API 错误: ${response.status}`);
+            }
         }
 
-        if (!text || text.trim().length < 100) {
+        const result = await response.json();
+
+        // 验证返回格式
+        if (!result.choices || !result.choices[0] || !result.choices[0].message) {
+            console.error('❌ HuggingFace 返回格式异常:', JSON.stringify(result, null, 2));
+            throw new Error('HuggingFace 返回格式异常');
+        }
+
+        const content = result.choices[0].message.content;
+
+        if (!content || content.trim().length < 100) {
             throw new Error('HuggingFace 返回内容过短或为空');
         }
 
-        return text.trim();
+        console.log(`✅ HuggingFace API 调用成功, 耗时: ${duration}ms`);
+        console.log(`   返回内容长度: ${content.length} 字符`);
+
+        return content.trim();
 
     } catch (error) {
-        if (error.response) {
-            // API返回错误
-            const status = error.response.status;
-            const message = error.response.data?.error || error.message;
+        clearTimeout(timeoutId);
 
-            if (status === 503) {
-                throw new Error('HuggingFace 模型正在加载中，请稍后重试');
-            } else if (status === 401) {
-                throw new Error('HuggingFace API key 无效');
-            } else if (status === 429) {
-                throw new Error('HuggingFace API 请求频率超限');
-            } else {
-                throw new Error(`HuggingFace API 错误 (${status}): ${message}`);
-            }
-        } else if (error.code === 'ECONNABORTED') {
+        if (error.name === 'AbortError') {
             throw new Error('HuggingFace API 请求超时');
-        } else {
-            throw new Error(`HuggingFace 调用失败: ${error.message}`);
         }
+
+        // 如果是已经抛出的自定义错误，直接传递
+        if (error.message.includes('HuggingFace')) {
+            throw error;
+        }
+
+        // 其他错误
+        throw new Error(`HuggingFace 调用失败: ${error.message}`);
     }
 }
 
