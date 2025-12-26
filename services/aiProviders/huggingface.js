@@ -20,7 +20,8 @@ async function callHuggingFace(prompt) {
     }, 120000); // 120秒超时
 
     try {
-        const apiUrl = `https://api-inference.huggingface.co/models/${model}/v1/chat/completions`;
+        // 使用 HuggingFace Router API (兼容 OpenAI 格式)
+        const apiUrl = process.env.HUGGINGFACE_API_URL || 'https://router.huggingface.co/v1/chat/completions';
 
         const headers = {
             'Authorization': `Bearer ${apiKey}`,
@@ -36,9 +37,9 @@ async function callHuggingFace(prompt) {
                 }
             ],
             max_tokens: 2000,
-            temperature: 0.7,
-            top_p: 0.9,
-            stream: false
+            temperature: 0.9,
+            frequency_penalty: 0.4,
+            presence_penalty: 0.3
         };
 
         console.log(`🤖 调用 HuggingFace API: ${model}`);
