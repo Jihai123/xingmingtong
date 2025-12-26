@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星梦通 · AI解梦</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div class="stars"></div>
+    <div class="stars2"></div>
+    <div class="stars3"></div>
+
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="logo">
+                <span class="moon-icon">🌙</span>
+                <h1>星梦通</h1>
+            </div>
+            <p class="subtitle">让AI为你解读梦境的秘密</p>
+        </header>
+
+        <!-- 主要内容区 -->
+        <main class="main-content">
+            <!-- 输入区域 -->
+            <div class="dream-input-section">
+                <div class="input-header">
+                    <h2>✨ 描述你的梦境</h2>
+                    <p>请详细描述你的梦境，包括场景、人物、情绪等细节</p>
+                </div>
+
+                <div class="input-wrapper">
+                    <textarea
+                        id="dreamInput"
+                        class="dream-textarea"
+                        placeholder="例如：我梦见自己在一片金色的麦田里奔跑，天空中有一轮明月，我感到既自由又有些迷茫..."
+                        rows="6"
+                    ></textarea>
+
+                    <div class="input-footer">
+                        <span class="char-count">已输入 <span id="charCount">0</span> 字</span>
+                        <button id="interpretBtn" class="interpret-btn">
+                            <span class="btn-text">开始解梦</span>
+                            <span class="btn-icon">🔮</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 加载动画 -->
+            <div id="loadingSection" class="loading-section hidden">
+                <div class="loading-animation">
+                    <div class="crystal-ball">🔮</div>
+                    <div class="loading-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <p class="loading-text">AI正在解读你的梦境...</p>
+                </div>
+            </div>
+
+            <!-- 解梦结果 -->
+            <div id="resultSection" class="result-section hidden">
+                <div class="result-header">
+                    <h2>🌟 梦境解析</h2>
+                    <button id="newDreamBtn" class="new-dream-btn">解读新梦境</button>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-content" id="resultContent"></div>
+                    <div class="result-footer">
+                        <div class="ai-badge">
+                            <span id="aiProvider">AI 解析</span>
+                        </div>
+                        <div class="result-actions">
+                            <button class="action-btn" onclick="copyResult()">
+                                📋 复制结果
+                            </button>
+                            <button class="action-btn" onclick="shareResult()">
+                                🔗 分享
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>⭐ 梦境解析仅供参考，请理性看待</p>
+            <p class="footer-note">Powered by AI · Made with 💜</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
