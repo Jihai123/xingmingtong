@@ -29,15 +29,15 @@ async function callHuggingFace(prompt) {
         };
 
         const requestBody = {
-            model: model,
             messages: [
                 {
                     role: 'user',
                     content: prompt
                 }
             ],
-            max_tokens: 2000,
+            model: model,
             temperature: 0.9,
+            max_tokens: 1400,
             frequency_penalty: 0.4,
             presence_penalty: 0.3
         };
