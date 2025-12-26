@@ -63,6 +63,43 @@ npm run dev
 
 打开浏览器访问：`http://localhost:3000`
 
+## 🌐 生产环境部署
+
+### 部署到自定义域名（如 https://zhibeimao.com/jiemeng）
+
+我们提供了完整的生产环境部署方案，包括：
+
+- ✅ Nginx 反向代理配置
+- ✅ SSL 证书自动申请和续期
+- ✅ PM2 进程管理和自动重启
+- ✅ 一键部署脚本
+- ✅ 性能优化和安全配置
+
+**📖 完整部署指南**: 请查看 [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+### 快速部署
+
+```bash
+# 1. 上传代码到服务器
+scp -r . user@your-server:/var/www/xingmingtong
+
+# 2. SSH 登录服务器
+ssh user@your-server
+
+# 3. 进入项目目录
+cd /var/www/xingmingtong
+
+# 4. 运行一键部署脚本
+chmod +x deploy.sh
+./deploy.sh
+
+# 5. 配置 Nginx（参考 nginx.conf 或 nginx-simple.conf）
+sudo cp nginx.conf /etc/nginx/sites-available/zhibeimao.com
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+详细步骤请参考 **[完整部署文档](./DEPLOYMENT.md)**
+
 ## 🔑 获取API密钥
 
 ### HuggingFace (推荐优先使用)
@@ -87,11 +124,11 @@ npm run dev
 
 ```
 xingmingtong/
-├── public/                 # 前端静态文件
-│   ├── index.html         # 主页面
-│   ├── style.css          # 样式文件
-│   └── script.js          # 前端逻辑
-├── services/              # 后端服务
+├── public/                       # 前端静态文件
+│   ├── index.html               # 主页面
+│   ├── style.css                # 样式文件
+│   └── script.js                # 前端逻辑
+├── services/                     # 后端服务
 │   ├── dreamInterpreter.js      # 解梦主服务
 │   ├── promptGenerator.js       # 提示词生成器
 │   └── aiProviders/             # AI提供商
@@ -99,10 +136,15 @@ xingmingtong/
 │       ├── claude.js            # Claude API
 │       ├── openai.js            # OpenAI API
 │       └── gemini.js            # Gemini API
-├── server.js              # Express服务器
-├── package.json           # 项目配置
-├── .env.example          # 环境变量示例
-└── README.md             # 项目文档
+├── server.js                    # Express服务器
+├── package.json                 # 项目配置
+├── ecosystem.config.js          # PM2 配置文件
+├── deploy.sh                    # 一键部署脚本
+├── nginx.conf                   # Nginx 配置（子路径部署）
+├── nginx-simple.conf            # Nginx 配置（根路径部署）
+├── .env.example                 # 环境变量示例
+├── DEPLOYMENT.md                # 生产环境部署指南
+└── README.md                    # 项目文档
 ```
 
 ## 🎯 工作流程
